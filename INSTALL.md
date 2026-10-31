@@ -53,28 +53,89 @@ Hay tres opciones. Elige **una**.
 ### Opción 1: MSYS2 con MinGW-w64 (recomendada)
 
 1. Descarga e instala MSYS2 desde [msys2.org](https://www.msys2.org/).
-2. Abre la terminal **UCRT64** (no la MSYS convencional) y ejecuta:
+
+   Deja la carpeta de instalación por defecto (`C:\msys64`). Si instalaste en otra
+   carpeta, anótala: la necesitarás en el paso 3.
+
+2. Abre la terminal **UCRT64** (no la MSYS convencional). Para abrirla:
+
+   - Pulsa la tecla `Windows` del teclado.
+   - Escribe `UCRT64` y confirma con `Enter`.
+   - Se abrirá una ventana negra (la terminal): ahí se escribe una línea a la vez y
+     se confirma con `Enter`.
+
+   Ejecuta en esa terminal:
 
 ```bash
 pacman -Syu
 pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make git
 ```
 
-3. Agrega `C:\msys64\ucrt64\bin` a la variable de entorno `PATH`:
-   - Busca "Editar las variables de entorno del sistema" → *Variables de entorno* → edita `Path` → añade la carpeta.
-4. En MSYS2, `make` se instala como `mingw32-make`. Para que este laboratorio funcione sin cambios, crea un alias permanente:
+3. Agrega la carpeta `C:\msys64\ucrt64\bin` al **PATH** de Windows.
 
-```bash
-echo 'alias make=mingw32-make' >> ~/.bashrc
-source ~/.bashrc
-```
+   **¿Qué es el PATH?** Es la lista de carpetas donde Windows busca los programas
+   cuando los llamas por su nombre. Sin este paso, escribir `g++` en una terminal
+   da el error *"...is not recognized as an internal or external command"*, aunque
+   el programa sí esté instalado.
 
-Verificación (en CMD o PowerShell):
+   Elige **una** de las dos formas:
+
+   **Forma A — con ventanas (recomendada):**
+   1. Pulsa la tecla `Windows` y escribe `variables de entorno`.
+   2. En los resultados, haz clic en **"Editar las variables de entorno del sistema"**
+      (así, exactamente; si apareciera solo "Editar variables de entorno", también sirve).
+   3. En la ventana que se abre, haz clic en el botón **"Variables de entorno..."**.
+   4. En la mitad de abajo ("Variables del sistema"), haz clic sobre la fila `Path`
+      (una sola vez, solo selección) y luego en el botón **"Editar..."**.
+   5. En la nueva ventana, haz clic en **"Nuevo"** y escribe exactamente:
+      `C:\msys64\ucrt64\bin`
+      (si instalaste MSYS2 en otra carpeta en el paso 1, usa `<esacarpeta>\ucrt64\bin`).
+   6. Acepta con **"Aceptar"** en **las tres ventanas** — si solo cierras con la `X`,
+      el cambio no se guarda.
+   7. Opcional, para comprobarlo: abre el Explorador de archivos, pega
+      `C:\msys64\ucrt64\bin` en la barra de direcciones y pulsa `Enter`. Debes ver
+      un archivo llamado `g++.exe`.
+
+   **Forma B — con PowerShell:**
+   1. Pulsa la tecla `Windows`, escribe `powershell` y confirma con `Enter`.
+   2. Copia y pega estas dos líneas (clic derecho pega en PowerShell), una a una:
+
+   ```powershell
+   $actual = [Environment]::GetEnvironmentVariable('Path', 'User')
+   [Environment]::SetEnvironmentVariable("Path", "$actual;C:\msys64\ucrt64\bin", 'User')
+   ```
+
+   3. Si no aparece ningún mensaje de error, el cambio quedó guardado.
+
+   **Importante:** cualquier terminal abierta **antes** de este cambio sigue usando
+   el PATH viejo. Ciérrala por completo y ábrete una nueva en el paso de verificación.
+
+4. Verificación. Abre una terminal **nueva**:
+   - Pulsa la tecla `Windows`, escribe `cmd` y confirma con `Enter`.
+   - Escribe estos comandos, uno por línea:
 
 ```bat
 g++ --version
 mingw32-make --version
 git --version
+```
+
+   Debes ver líneas de versión de cada uno:
+
+   ```
+   g++.exe (GCC) 14.x.x
+   GNU Make 4.x
+   git version 2.x
+   ```
+
+   Si alguno falla con *"...is not recognized"*, revisa la sección
+   **Solución de problemas** al final de este documento.
+
+5. En MSYS2, `make` se instala como `mingw32-make`. Para que este laboratorio funcione sin cambios, crea un alias permanente:
+
+```bash
+echo 'alias make=mingw32-make' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 > **Nota sobre sanitizadores:** la versión de MinGW-w64 de GCC no incluye los runtime de
@@ -130,6 +191,16 @@ g++ -std=c++17 -Wall -Wextra -Wpedantic -O0 -g st_test.cpp segment_tree.cpp -o s
 
 ## Solución de problemas
 
+- **`g++` no se reconoce en Windows (Forma A/B del PATH):**
+  1. ¿Cerraste TODAS las terminales y abriste una nueva? El PATH no se recarga en
+     terminales que ya estaban abiertas.
+  2. Verifica que la carpeta existe: en el Explorador de archivos pega
+     `C:\msys64\ucrt64\bin` en la barra de direcciones. Si la carpeta no existe,
+     tu instalación de MSYS2 está en otra ubicación o el paso 2 no terminó;
+     reinstala/instala GCC con la UCRT64 del paso 2.
+  3. Reabre "Editar variables de entorno del sistema" y comprueba que `Path`
+     contenga exactamente `C:\msys64\ucrt64\bin` (una fila propia, sin comillas,
+     sin espacios finales).
 - **`make: command not found`** (Windows): usa `mingw32-make` o completa el paso de `PATH`.
 - **`error: unrecognized command line option '-fsanitize=...'`**: tu compilador no soporta los
   sanitizadores (MinGW sobre Windows). Usa la Opción 2 (WSL2) o compila con:
