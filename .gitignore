@@ -1,0 +1,11 @@
+# Binarios de compilación y pruebas
+segment_tree_runner
+segment_tree_runner_debug
+segment_tree_runner_valgrind
+
+# Objetos y archivos generados
+*.o
+*.out
+
+# Directorios de compilación
+build/
